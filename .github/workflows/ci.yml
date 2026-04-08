@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,3 +21,15 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+  # Verify the library builds and runs on Node 18 (Vitest 3.x needs Node 20+)
+  build-node18:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm run build
+      - run: node dist/cli.js --help
