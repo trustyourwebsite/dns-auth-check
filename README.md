@@ -223,8 +223,8 @@ email-auth-check:
 ## Related
 
 - [TrustYourWebsite](https://trustyourwebsite.nl) — Full website compliance scanning for EU businesses
-- [cookie-scanner](https://github.com/nicedayzhu/cookie-scanner) — Cookie consent compliance checker
-
+- [@trustyourwebsite/security-headers](https://github.com/trustyourwebsite/security-headers) — HTTP security headers grader (HSTS, CSP, X-Frame-Options)
+- [@trustyourwebsite/cookie-consent-validator](https://github.com/trustyourwebsite/cookie-consent-validator) — Verify cookie consent banners actually stop tracking on "Reject All"
 ## License
 
 MIT © [TrustYourWebsite](https://trustyourwebsite.nl)
