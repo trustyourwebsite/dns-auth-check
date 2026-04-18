@@ -1,15 +1,19 @@
 {
   "name": "@trustyourwebsite/dns-auth-check",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Zero-dependency DNS email authentication auditor. Validates SPF, DKIM, DMARC, BIMI, and MTA-STS configuration with recursive SPF lookup counting and automatic DKIM selector discovery.",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "dns-auth-check": "dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -25,17 +29,25 @@
     "bimi",
     "mta-sts",
     "email",
-    "authentication",
-    "security",
+    "email-authentication",
+    "email-security",
     "deliverability",
+    "security",
+    "compliance",
     "checker",
     "validator",
-    "compliance"
+    "auditor",
+    "cli",
+    "nodejs",
+    "typescript",
+    "zero-dependencies",
+    "gdpr",
+    "eu"
   ],
   "homepage": "https://trustyourwebsite.nl",
   "repository": {
     "type": "git",
-    "url": "https://github.com/trustyourwebsite/dns-auth-check"
+    "url": "git+https://github.com/trustyourwebsite/dns-auth-check.git"
   },
   "bugs": {
     "url": "https://github.com/trustyourwebsite/dns-auth-check/issues"
@@ -44,6 +56,9 @@
   "license": "MIT",
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "typescript": "^5.8.0",
