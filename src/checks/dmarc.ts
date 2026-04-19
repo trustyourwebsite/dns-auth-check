@@ -1,4 +1,4 @@
-import { resolveTxt } from '../dns.js';
+import { resolveTxt, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { DMARCResult, DMARCTag, CheckResult } from '../types.js';
 
 function parseTags(record: string): DMARCTag[] {
@@ -137,7 +137,26 @@ export async function checkDMARC(domain: string): Promise<DMARCResult> {
       tags,
       checks,
     };
-  } catch {
+  } catch (err) {
+    if (!isDnsNotFound(err)) {
+      // DNS infrastructure error
+      const errorMsg = getDnsErrorMessage(err);
+      checks.push({ status: 'error', message: `DNS lookup failed for ${dmarcDomain}: ${errorMsg}` });
+      return {
+        found: false,
+        dnsError: true,
+        record: null,
+        policy: null,
+        subdomainPolicy: null,
+        rua: null,
+        ruf: null,
+        pct: null,
+        adkim: null,
+        aspf: null,
+        tags: [],
+        checks,
+      };
+    }
     checks.push({ status: 'fail', message: `No DMARC record found at ${dmarcDomain}` });
     return {
       found: false,

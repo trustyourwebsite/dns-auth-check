@@ -1,4 +1,4 @@
-import { resolveTxt } from '../dns.js';
+import { resolveTxt, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { DKIMResult, DKIMSelector, CheckResult } from '../types.js';
 
 const DEFAULT_SELECTORS = [
@@ -82,12 +82,19 @@ export async function checkDKIM(
   }
 
   const foundSelectors = selectors.filter((s) => s.found);
+  const errorSelectors = selectors.filter((s) => s.dnsError);
   const found = foundSelectors.length > 0;
+  const hasDnsError = errorSelectors.length > 0 && !found;
 
   if (found) {
     overallChecks.push({
       status: 'pass',
       message: `Found ${foundSelectors.length} DKIM selector(s): ${foundSelectors.map((s) => s.selector).join(', ')}`,
+    });
+  } else if (hasDnsError) {
+    overallChecks.push({
+      status: 'error',
+      message: `DNS lookup failed for DKIM selectors — cannot determine if DKIM is configured`,
     });
   } else {
     overallChecks.push({
@@ -100,6 +107,7 @@ export async function checkDKIM(
     selectorsChecked: selectorsToCheck,
     selectors,
     found,
+    dnsError: hasDnsError,
     checks: overallChecks,
   };
 }
@@ -168,7 +176,20 @@ async function checkSelector(domain: string, selector: string): Promise<DKIMSele
       keyLength,
       checks,
     };
-  } catch {
+  } catch (err) {
+    if (!isDnsNotFound(err)) {
+      // DNS infrastructure error
+      const errorMsg = getDnsErrorMessage(err);
+      return {
+        selector,
+        found: false,
+        dnsError: true,
+        record: null,
+        keyType: null,
+        keyLength: null,
+        checks: [{ status: 'error', message: `DNS lookup failed for ${dkimDomain}: ${errorMsg}` }],
+      };
+    }
     return {
       selector,
       found: false,

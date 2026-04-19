@@ -1,4 +1,4 @@
-import { resolveTxt } from '../dns.js';
+import { resolveTxt, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { MTASTSResult, CheckResult } from '../types.js';
 
 /**
@@ -77,7 +77,12 @@ export async function checkMTASTS(domain: string): Promise<MTASTSResult> {
     }
 
     return { found: true, record: stsRecord, policyMode, checks };
-  } catch {
+  } catch (err) {
+    if (!isDnsNotFound(err)) {
+      const errorMsg = getDnsErrorMessage(err);
+      checks.push({ status: 'error', message: `DNS lookup failed for MTA-STS: ${errorMsg}` });
+      return { found: false, dnsError: true, record: null, policyMode: null, checks };
+    }
     checks.push({ status: 'info', message: 'No MTA-STS record found (optional)' });
     return { found: false, record: null, policyMode: null, checks };
   }

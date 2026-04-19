@@ -13,7 +13,14 @@ export function gradeResult(result: Omit<AuditResult, 'grade' | 'score' | 'issue
   const issues: Issue[] = [];
 
   // --- SPF scoring ---
-  if (!result.spf.found) {
+  if (result.spf.dnsError) {
+    score -= 5;
+    issues.push({
+      severity: 'high',
+      message: 'SPF DNS lookup failed — cannot determine if record exists',
+      fix: 'Check your DNS configuration or try again later',
+    });
+  } else if (!result.spf.found) {
     score -= 25;
     issues.push({
       severity: 'critical',
@@ -78,7 +85,14 @@ export function gradeResult(result: Omit<AuditResult, 'grade' | 'score' | 'issue
   }
 
   // --- DKIM scoring ---
-  if (!result.dkim.found) {
+  if (result.dkim.dnsError) {
+    score -= 5;
+    issues.push({
+      severity: 'high',
+      message: 'DKIM DNS lookup failed — cannot determine if records exist',
+      fix: 'Check your DNS configuration or try again later',
+    });
+  } else if (!result.dkim.found) {
     score -= 20;
     issues.push({
       severity: 'high',
@@ -107,7 +121,14 @@ export function gradeResult(result: Omit<AuditResult, 'grade' | 'score' | 'issue
   }
 
   // --- DMARC scoring ---
-  if (!result.dmarc.found) {
+  if (result.dmarc.dnsError) {
+    score -= 5;
+    issues.push({
+      severity: 'high',
+      message: 'DMARC DNS lookup failed — cannot determine if record exists',
+      fix: 'Check your DNS configuration or try again later',
+    });
+  } else if (!result.dmarc.found) {
     score -= 25;
     issues.push({
       severity: 'critical',
@@ -178,7 +199,14 @@ export function gradeResult(result: Omit<AuditResult, 'grade' | 'score' | 'issue
   }
 
   // --- MX (if checked) ---
-  if (result.mx && !result.mx.found) {
+  if (result.mx?.dnsError) {
+    score -= 5;
+    issues.push({
+      severity: 'high',
+      message: 'MX DNS lookup failed — cannot determine if records exist',
+      fix: 'Check your DNS configuration or try again later',
+    });
+  } else if (result.mx && !result.mx.found) {
     score -= 10;
     issues.push({
       severity: 'high',

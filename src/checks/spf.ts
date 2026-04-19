@@ -1,4 +1,4 @@
-import { resolveTxt } from '../dns.js';
+import { resolveTxt, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { SPFResult, SPFMechanism, CheckResult } from '../types.js';
 
 const SPF_SUBDOMAINS = ['send', 'mail', 'em', 'email'];
@@ -133,8 +133,27 @@ export async function checkSPF(domain: string): Promise<SPFResult> {
         spfDomain = d;
         break;
       }
-    } catch {
-      // No records for this domain
+    } catch (err) {
+      if (!isDnsNotFound(err)) {
+        // DNS infrastructure error — don't treat as "not found"
+        const errorMsg = getDnsErrorMessage(err);
+        checks.push({ status: 'error', message: `DNS lookup failed for ${d}: ${errorMsg}` });
+        return {
+          found: false,
+          dnsError: true,
+          record: null,
+          domain: null,
+          valid: false,
+          mechanisms: [],
+          lookupCount: 0,
+          allQualifier: null,
+          recordLength: 0,
+          multipleRecords: false,
+          hasDeprecatedPtr: false,
+          checks,
+        };
+      }
+      // NOTFOUND/NODATA — no records for this domain, continue checking
     }
   }
 

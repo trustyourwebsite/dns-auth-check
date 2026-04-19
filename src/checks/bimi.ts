@@ -1,4 +1,4 @@
-import { resolveTxt } from '../dns.js';
+import { resolveTxt, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { BIMIResult, CheckResult } from '../types.js';
 
 /**
@@ -45,7 +45,12 @@ export async function checkBIMI(domain: string): Promise<BIMIResult> {
     }
 
     return { found: true, record: bimiRecord, logoUrl, vmcUrl, checks };
-  } catch {
+  } catch (err) {
+    if (!isDnsNotFound(err)) {
+      const errorMsg = getDnsErrorMessage(err);
+      checks.push({ status: 'error', message: `DNS lookup failed for BIMI: ${errorMsg}` });
+      return { found: false, dnsError: true, record: null, logoUrl: null, vmcUrl: null, checks };
+    }
     checks.push({ status: 'info', message: 'No BIMI record found (optional)' });
     return { found: false, record: null, logoUrl: null, vmcUrl: null, checks };
   }

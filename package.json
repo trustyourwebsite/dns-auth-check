@@ -1,6 +1,6 @@
 {
   "name": "@trustyourwebsite/dns-auth-check",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Zero-dependency DNS email authentication auditor. Validates SPF, DKIM, DMARC, BIMI, and MTA-STS configuration with recursive SPF lookup counting and automatic DKIM selector discovery.",
   "type": "module",
   "main": "dist/index.js",

@@ -1,6 +1,6 @@
 export type Grade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
-export type Status = 'pass' | 'warn' | 'fail' | 'info';
+export type Status = 'pass' | 'warn' | 'fail' | 'info' | 'error';
 
 export interface Issue {
   severity: Severity;
@@ -16,6 +16,7 @@ export interface SPFMechanism {
 
 export interface SPFResult {
   found: boolean;
+  dnsError?: boolean;
   record: string | null;
   domain: string | null;
   valid: boolean;
@@ -31,6 +32,7 @@ export interface SPFResult {
 export interface DKIMSelector {
   selector: string;
   found: boolean;
+  dnsError?: boolean;
   record: string | null;
   keyType: string | null;
   keyLength: number | null;
@@ -41,6 +43,7 @@ export interface DKIMResult {
   selectorsChecked: string[];
   selectors: DKIMSelector[];
   found: boolean;
+  dnsError?: boolean;
   checks: CheckResult[];
 }
 
@@ -51,6 +54,7 @@ export interface DMARCTag {
 
 export interface DMARCResult {
   found: boolean;
+  dnsError?: boolean;
   record: string | null;
   policy: string | null;
   subdomainPolicy: string | null;
@@ -65,6 +69,7 @@ export interface DMARCResult {
 
 export interface BIMIResult {
   found: boolean;
+  dnsError?: boolean;
   record: string | null;
   logoUrl: string | null;
   vmcUrl: string | null;
@@ -73,6 +78,7 @@ export interface BIMIResult {
 
 export interface MTASTSResult {
   found: boolean;
+  dnsError?: boolean;
   record: string | null;
   policyMode: string | null;
   checks: CheckResult[];
@@ -86,6 +92,7 @@ export interface MXRecord {
 
 export interface MXResult {
   found: boolean;
+  dnsError?: boolean;
   records: MXRecord[];
   checks: CheckResult[];
 }

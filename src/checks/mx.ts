@@ -1,4 +1,4 @@
-import { resolveMx, resolveA } from '../dns.js';
+import { resolveMx, resolveA, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { MXResult, MXRecord, CheckResult } from '../types.js';
 
 /** Map of MX hostname patterns to provider names. */
@@ -83,7 +83,15 @@ export async function checkMX(domain: string): Promise<MXResult> {
     }
 
     return { found: true, records, checks };
-  } catch {
+  } catch (err) {
+    if (!isDnsNotFound(err)) {
+      const errorMsg = getDnsErrorMessage(err);
+      checks.push({
+        status: 'error',
+        message: `DNS lookup failed for MX records: ${errorMsg}`,
+      });
+      return { found: false, dnsError: true, records: [], checks };
+    }
     checks.push({
       status: 'fail',
       message: 'No MX records found — domain cannot receive email',

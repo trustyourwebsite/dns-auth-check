@@ -5,6 +5,7 @@ const ICONS: Record<string, string> = {
   warn: '\u26A0',   // ⚠
   fail: '\u2717',   // ✗
   info: '-',
+  error: '!',
 };
 
 const SEVERITY_LABELS: Record<string, string> = {

@@ -6,6 +6,7 @@ export { checkBIMI } from './checks/bimi.js';
 export { checkMTASTS } from './checks/mta-sts.js';
 export { checkMX } from './checks/mx.js';
 export { gradeResult } from './grader.js';
+export { isDnsNotFound, getDnsErrorMessage } from './dns.js';
 export { formatTable } from './formatters/table.js';
 export { formatJSON } from './formatters/json.js';
 

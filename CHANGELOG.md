@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-04-19
+
+### Added
+- DNS error classification: the tool now distinguishes between missing records (NOTFOUND/NODATA) and DNS infrastructure errors (SERVFAIL, TIMEOUT, CONNREFUSED). Previously, all DNS failures were silently treated as "record missing," producing false negatives.
+- New `isDnsNotFound()` and `getDnsErrorMessage()` utility functions exported for programmatic use.
+- Error status icon (`!`) in table output for DNS failures.
+
+### Changed
+- DNS infrastructure errors now deduct only -5 points (instead of the full -25/-20/-25 for missing records) since the record may actually exist.
+- DNS errors are reported with severity `high` so CI mode (`--ci`) still catches them.
+
+
 ## [1.0.1] — 2026-04-18
 
 ### Changed
