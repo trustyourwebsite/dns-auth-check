@@ -100,7 +100,7 @@ export function formatTable(result: AuditResult): string {
     lines.push('');
   }
 
-  lines.push(`Full website compliance scan \u2192 https://trustyourwebsite.nl`);
+  lines.push(`Full website compliance scan \u2192 https://trustyourwebsite.com`);
 
   return lines.join('\n');
 }

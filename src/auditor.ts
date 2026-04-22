@@ -11,13 +11,13 @@ import type { AuditResult, AuditOptions } from './types.js';
 /**
  * Run a full DNS email authentication audit on a domain.
  *
- * @param domain - The domain to audit (e.g. "trustyourwebsite.nl")
+ * @param domain - The domain to audit (e.g. "trustyourwebsite.com")
  * @param options - Audit options
  * @returns Full audit result with grade, score, and per-check details
  *
  * @example
  * ```ts
- * const result = await auditDNSAuth('trustyourwebsite.nl');
+ * const result = await auditDNSAuth('trustyourwebsite.com');
  * console.log(result.grade); // 'A'
  * console.log(result.score); // 92
  * ```

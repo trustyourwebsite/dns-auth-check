@@ -2,7 +2,7 @@
 
 Zero-dependency Node.js tool that validates SPF, DKIM, DMARC, BIMI, and MTA-STS configuration. Recursive SPF lookup counting and automatic DKIM selector discovery. CI-friendly.
 
-Built by [TrustYourWebsite](https://trustyourwebsite.nl) — automated website compliance scanning for EU businesses.
+Built by [TrustYourWebsite](https://trustyourwebsite.com) — automated website compliance scanning for EU businesses.
 
 ## Features
 
@@ -20,11 +20,11 @@ Built by [TrustYourWebsite](https://trustyourwebsite.nl) — automated website c
 
 ```bash
 # Run without installing
-npx @trustyourwebsite/dns-auth-check trustyourwebsite.nl
+npx @trustyourwebsite/dns-auth-check trustyourwebsite.com
 
 # Install globally
 npm install -g @trustyourwebsite/dns-auth-check
-dns-auth-check trustyourwebsite.nl
+dns-auth-check trustyourwebsite.com
 ```
 
 ## CLI Usage
@@ -109,7 +109,7 @@ const dmarc = await checkDMARC('example.com');
 ```
 DNS Email Authentication Report
 ================================
-Domain:  trustyourwebsite.nl
+Domain:  trustyourwebsite.com
 Grade:   B (74/100)
 
 SPF Record:
@@ -120,14 +120,14 @@ SPF Record:
 
 DKIM Records:
   ✓ Found 1 DKIM selector(s): google
-  ✓ Record found at google._domainkey.trustyourwebsite.nl
+  ✓ Record found at google._domainkey.trustyourwebsite.com
   - Key type: RSA
   ✓ Key length: ~2048 bits
 
 DMARC Record:
-  ✓ Record found: v=DMARC1; p=none; rua=mailto:dmarc@trustyourwebsite.nl
+  ✓ Record found: v=DMARC1; p=none; rua=mailto:dmarc@trustyourwebsite.com
   ⚠ Policy is "none" — DMARC is monitoring only, not blocking spoofed emails
-  ✓ Reporting URI (rua) configured: mailto:dmarc@trustyourwebsite.nl
+  ✓ Reporting URI (rua) configured: mailto:dmarc@trustyourwebsite.com
   ⚠ No subdomain policy (sp=) — subdomains inherit p=none
 
 BIMI:
@@ -143,7 +143,7 @@ Issues (ordered by priority):
      Fix: Add sp=reject to your DMARC record to protect subdomains
   3. [INFO] No BIMI record — consider adding one for brand visibility in inboxes
 
-Full website compliance scan → https://trustyourwebsite.nl
+Full website compliance scan → https://trustyourwebsite.com
 ```
 
 ## Checks Performed
@@ -222,9 +222,9 @@ email-auth-check:
 
 ## Related
 
-- [TrustYourWebsite](https://trustyourwebsite.nl) — Full website compliance scanning for EU businesses
+- [TrustYourWebsite](https://trustyourwebsite.com) — Full website compliance scanning for EU businesses
 - [@trustyourwebsite/security-headers](https://github.com/trustyourwebsite/security-headers) — HTTP security headers grader (HSTS, CSP, X-Frame-Options)
 - [@trustyourwebsite/cookie-consent-validator](https://github.com/trustyourwebsite/cookie-consent-validator) — Verify cookie consent banners actually stop tracking on "Reject All"
 ## License
 
-MIT © [TrustYourWebsite](https://trustyourwebsite.nl)
+MIT © [TrustYourWebsite](https://trustyourwebsite.com)

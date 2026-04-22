@@ -9,7 +9,7 @@ import type { CLIOptions } from './types.js';
 function printUsage(): void {
   console.log(`
 dns-auth-check — DNS email authentication auditor
-https://trustyourwebsite.nl
+https://trustyourwebsite.com
 
 Usage:
   dns-auth-check <domain> [options]
@@ -27,7 +27,7 @@ Options:
   --version                     Show version
 
 Examples:
-  dns-auth-check trustyourwebsite.nl
+  dns-auth-check trustyourwebsite.com
   dns-auth-check example.com --format json --check-mx
   dns-auth-check example.com --ci --dkim-selectors google,s1,default
   dns-auth-check example.com --output report.json --format json
