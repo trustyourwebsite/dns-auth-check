@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dns-auth-check &mdash; Audit SPF, DKIM, DMARC, BIMI and MTA-STS for any domain</title>
+<meta name="description" content="Zero-dependency Node.js CLI that validates SPF, DKIM, DMARC, BIMI and MTA-STS &mdash; with recursive SPF lookup counting and automatic DKIM selector discovery. Grades A+ to F. CI-friendly. Built by TrustYourWebsite.">
+<link rel="canonical" href="https://trustyourwebsite.github.io/dns-auth-check/">
+
+<meta property="og:title" content="dns-auth-check &mdash; Grade your email DNS authentication">
+<meta property="og:description" content="Zero-dependency CLI that audits SPF, DKIM, DMARC, BIMI and MTA-STS, then grades your domain A+ to F. CI-friendly.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://trustyourwebsite.github.io/dns-auth-check/">
+<meta name="twitter:card" content="summary_large_image">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "@trustyourwebsite/dns-auth-check",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Cross-platform",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "url": "https://trustyourwebsite.github.io/dns-auth-check/",
+  "downloadUrl": "https://www.npmjs.com/package/@trustyourwebsite/dns-auth-check",
+  "codeRepository": "https://github.com/trustyourwebsite/dns-auth-check",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": {
+    "@type": "Organization",
+    "name": "TrustYourWebsite",
+    "url": "https://trustyourwebsite.com"
+  }
+}
+</script>
+
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #131a33;
+    --ink: #e7ecf7;
+    --muted: #98a2c2;
+    --accent: #6ee7b7;
+    --accent-ink: #052e1a;
+    --border: #232b4a;
+    --code-bg: #0a0f23;
+    --good: #6ee7b7;
+    --warn: #fbbf24;
+    --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: radial-gradient(1200px 600px at 70% -10%, #1c2550 0%, var(--bg) 60%);
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  header.nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .brand { font-weight: 600; letter-spacing: 0.2px; }
+  .brand a { color: var(--ink); }
+  .nav-right { display: flex; gap: 18px; font-size: 14px; color: var(--muted); }
+  .nav-right a { color: var(--muted); }
+
+  .hero { padding: 64px 0 32px; }
+  .eyebrow { color: var(--accent); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  h1 { font-size: clamp(28px, 4.2vw, 44px); line-height: 1.15; margin: 12px 0 16px; letter-spacing: -0.02em; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 720px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn {
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: transform 0.05s ease, background 0.15s ease;
+  }
+  .btn:hover { text-decoration: none; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { background: #5fd6a7; }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--panel); }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin: 22px 0;
+  }
+  .panel h2 { margin-top: 0; font-size: 20px; }
+  .grid { display: grid; gap: 14px; }
+  @media (min-width: 720px) {
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  }
+  .card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .card h3 { margin: 0 0 8px; font-size: 16px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  pre, code {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 13.5px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    color: #d6dcef;
+  }
+  code { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; }
+  pre code { background: none; padding: 0; }
+
+  .report { color: #c8d0e7; }
+  .report .ok { color: var(--good); }
+  .report .warn { color: var(--warn); }
+  .report .bad { color: var(--bad); }
+  .report .dim { color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--muted); font-weight: 600; }
+
+  .promo {
+    margin-top: 36px;
+    padding: 28px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1a2547 0%, #2a3a72 100%);
+    border: 1px solid #2d3a6a;
+  }
+  .promo h2 { margin-top: 0; font-size: 22px; }
+  .promo p { color: #c6cfee; max-width: 640px; }
+
+  footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="nav">
+    <div class="brand">
+      <a href="https://trustyourwebsite.github.io/dns-auth-check/">@trustyourwebsite/dns-auth-check</a>
+    </div>
+    <nav class="nav-right">
+      <a href="#install">Install</a>
+      <a href="#checks">Checks</a>
+      <a href="#ci">CI</a>
+      <a href="https://github.com/trustyourwebsite/dns-auth-check">GitHub</a>
+      <a href="https://trustyourwebsite.com">TrustYourWebsite</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">Open source &middot; MIT &middot; Zero dependencies</div>
+    <h1>Audit SPF, DKIM, DMARC, BIMI and MTA-STS for any domain.</h1>
+    <p class="lede">
+      A small Node.js CLI that validates every email DNS authentication record &mdash; with recursive SPF lookup
+      counting, automatic DKIM selector discovery and grading from A+ to F. Built by
+      <a href="https://trustyourwebsite.com">TrustYourWebsite</a> as part of our compliance scanning suite.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://trustyourwebsite.com">Get a free full-site compliance scan &rarr;</a>
+      <a class="btn btn-ghost" href="https://github.com/trustyourwebsite/dns-auth-check">View on GitHub</a>
+    </div>
+  </section>
+
+  <section class="panel" id="install">
+    <h2>Quick start</h2>
+    <pre><code>npx @trustyourwebsite/dns-auth-check example.com</code></pre>
+    <p style="color: var(--muted); margin-bottom: 0;">
+      Requires Node.js 18+. Want the full picture &mdash; security headers, cookies, GDPR consent, accessibility and more &mdash;
+      across your entire site? <a href="https://trustyourwebsite.com">Run a free scan at trustyourwebsite.com</a>.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Sample output</h2>
+<pre class="report"><code>DNS Email Authentication Report
+================================
+Domain:  example.com
+Grade:   <span class="warn">B (74/100)</span>
+
+SPF Record:
+  <span class="ok">&#10003;</span> Record found: v=spf1 include:_spf.google.com include:amazonses.com -all
+  <span class="ok">&#10003;</span> Hard fail (-all) configured
+  <span class="ok">&#10003;</span> DNS lookup count: 4/10
+  <span class="ok">&#10003;</span> Record length: 68 bytes
+
+DKIM Records:
+  <span class="ok">&#10003;</span> Found 1 DKIM selector(s): google
+  <span class="ok">&#10003;</span> Record found at google._domainkey.example.com
+  <span class="dim">-</span> Key type: RSA
+  <span class="ok">&#10003;</span> Key length: ~2048 bits
+
+DMARC Record:
+  <span class="ok">&#10003;</span> Record found: v=DMARC1; p=none; rua=mailto:dmarc@example.com
+  <span class="warn">&#9888;</span> Policy is "none" &mdash; DMARC is monitoring only, not blocking spoofed emails
+  <span class="ok">&#10003;</span> Reporting URI (rua) configured: mailto:dmarc@example.com
+  <span class="warn">&#9888;</span> No subdomain policy (sp=) &mdash; subdomains inherit p=none
+
+BIMI:
+  <span class="dim">-</span> No BIMI record found (optional)
+
+MTA-STS:
+  <span class="dim">-</span> No MTA-STS record found (optional)
+
+Issues (ordered by priority):
+  1. <span class="bad">[HIGH]</span> DMARC policy is "none" &mdash; monitoring only, not blocking spoofed emails
+     Fix: Change p=none to p=quarantine or p=reject after reviewing DMARC reports
+  2. <span class="warn">[LOW]</span> No subdomain DMARC policy (sp=) &mdash; subdomains inherit p=none
+     Fix: Add sp=reject to your DMARC record to protect subdomains
+  3. <span class="dim">[INFO]</span> No BIMI record &mdash; consider adding one for brand visibility in inboxes
+
+<span class="dim">Full website compliance scan &rarr; https://trustyourwebsite.com</span></code></pre>
+  </section>
+
+  <section class="grid grid-3">
+    <div class="card">
+      <h3>Zero runtime deps</h3>
+      <p>Only Node's built-in <code>node:dns</code> and <code>node:https</code>. Security tooling should have minimal attack surface.</p>
+    </div>
+    <div class="card">
+      <h3>DKIM auto-discovery</h3>
+      <p>Probes 18 common selectors out of the box &mdash; Google, Microsoft 365, SendGrid, Resend, Mandrill, Proton, Zoho and more &mdash; or specify your own.</p>
+    </div>
+    <div class="card">
+      <h3>Real SPF lookup counting</h3>
+      <p>Doesn't just check that SPF exists. Recursively counts DNS lookups against the RFC 7208 limit of 10, flags <code>+all</code>, deprecated <code>ptr</code> and overly permissive ranges.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="checks">
+    <h2>What we check</h2>
+    <table>
+      <thead>
+        <tr><th>Protocol</th><th>What we validate</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>SPF</code></td><td>Record present, syntax, lookup count vs RFC 7208 limit, <code>all</code> qualifier, length, deprecated mechanisms</td></tr>
+        <tr><td><code>DKIM</code></td><td>Auto-probes 18 selectors, key type (RSA / Ed25519), key length, revoked-key detection</td></tr>
+        <tr><td><code>DMARC</code></td><td>Policy strength, subdomain policy, <code>rua</code>/<code>ruf</code> reporting URIs, percentage, alignment modes</td></tr>
+        <tr><td><code>BIMI</code></td><td>Record at <code>default._bimi</code>, logo URL, VMC (Verified Mark Certificate)</td></tr>
+        <tr><td><code>MTA-STS</code></td><td>TXT record and policy file fetch with mode validation</td></tr>
+        <tr><td><code>MX</code> <span class="dim">(opt-in)</span></td><td>Record listing with priority, hostname resolution, provider identification (30+ providers)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Grading</h2>
+    <table>
+      <thead>
+        <tr><th>Grade</th><th>Score</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>A+</strong></td><td>95&ndash;100</td><td>Excellent &mdash; all protocols properly configured</td></tr>
+        <tr><td><strong>A</strong></td><td>85&ndash;94</td><td>Good &mdash; minor improvements possible</td></tr>
+        <tr><td><strong>B</strong></td><td>70&ndash;84</td><td>Fair &mdash; some important issues to fix</td></tr>
+        <tr><td><strong>C</strong></td><td>55&ndash;69</td><td>Poor &mdash; significant gaps in email auth</td></tr>
+        <tr><td><strong>D</strong></td><td>40&ndash;54</td><td>Bad &mdash; major security risks</td></tr>
+        <tr><td><strong>F</strong></td><td>0&ndash;39</td><td>Failing &mdash; email auth is essentially absent</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="ci">
+    <h2>Drop into CI</h2>
+    <pre><code># GitHub Actions
+- name: Check email DNS auth
+  run: npx @trustyourwebsite/dns-auth-check yourdomain.com --ci</code></pre>
+    <p style="color: var(--muted); margin-bottom: 0;">
+      Exit code <code>1</code> when critical or high-severity issues are found.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Use as a library</h2>
+<pre><code>import { auditDNSAuth } from '@trustyourwebsite/dns-auth-check';
+
+const result = await auditDNSAuth('example.com', {
+  dkimSelectors: ['google', 's1', 'default'],
+  checkMX: true,
+  timeout: 5000,
+});
+
+console.log(result.grade);            // 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
+console.log(result.score);            // 0-100
+console.log(result.spf.lookupCount);  // recursive DNS lookup count
+console.log(result.dkim.selectors);   // per-selector results
+console.log(result.dmarc.policy);     // 'none' | 'quarantine' | 'reject'</code></pre>
+  </section>
+
+  <section class="promo">
+    <h2>DNS auth is one piece of the compliance puzzle.</h2>
+    <p>
+      A real audit also covers HTTP security headers, cookie consent and GDPR, accessibility, TLS configuration
+      and broken-link health &mdash; on every page of your site.
+      <a href="https://trustyourwebsite.com">TrustYourWebsite</a> runs all of those automatically and gives you a single fix-it report.
+    </p>
+    <p style="margin-top: 20px;">
+      <a class="btn btn-primary" href="https://trustyourwebsite.com">Run a free scan at trustyourwebsite.com &rarr;</a>
+    </p>
+  </section>
+
+  <section class="grid grid-2">
+    <div class="card">
+      <h3><a href="https://github.com/trustyourwebsite/security-headers">security-headers</a></h3>
+      <p>Grade your website's HTTP security headers from A+ to F &mdash; HSTS, CSP, X-Frame-Options and more.</p>
+    </div>
+    <div class="card">
+      <h3><a href="https://github.com/trustyourwebsite/cookie-consent-validator">cookie-consent-validator</a></h3>
+      <p>Verify cookie banners actually stop tracking when users click "Reject All".</p>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      Built by <a href="https://trustyourwebsite.com">TrustYourWebsite</a> &mdash; automated website compliance for EU businesses.
+    </div>
+    <div>
+      <a href="https://github.com/trustyourwebsite/dns-auth-check">Source</a> &middot;
+      <a href="https://www.npmjs.com/package/@trustyourwebsite/dns-auth-check">npm</a> &middot;
+      <a href="https://github.com/trustyourwebsite/dns-auth-check/blob/main/LICENSE">MIT</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
