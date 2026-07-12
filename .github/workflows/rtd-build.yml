@@ -1,0 +1,38 @@
+name: Trigger Read the Docs build
+
+# RTD projects were created via the API, so there is no native GitHub
+# webhook. This workflow triggers a build of the "latest" version whenever
+# the docs sources change on main. Requires the READTHEDOCS_API_KEY repo
+# secret (a Read the Docs API v3 token).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs-rtd/**'
+      - 'mkdocs.yml'
+      - '.readthedocs.yaml'
+      - '.github/workflows/rtd-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: rtd-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    env:
+      RTD_SLUG: tyw-dns-auth-check
+    steps:
+      - name: Trigger RTD build of latest
+        run: |
+          code=$(curl -sS -o /tmp/rtd.json -w '%{http_code}' -X POST \
+            -H "Authorization: Token ${{ secrets.READTHEDOCS_API_KEY }}" \
+            "https://app.readthedocs.org/api/v3/projects/${RTD_SLUG}/versions/latest/builds/")
+          echo "HTTP ${code}"
+          cat /tmp/rtd.json
+          case "${code}" in 200|201|202) exit 0 ;; *) exit 1 ;; esac
