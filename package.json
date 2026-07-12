@@ -1,10 +1,17 @@
 {
   "name": "@trustyourwebsite/dns-auth-check",
-  "version": "1.1.1",
-  "description": "Zero-dependency DNS email authentication auditor. Validates SPF, DKIM, DMARC, BIMI, and MTA-STS configuration with recursive SPF lookup counting and automatic DKIM selector discovery.",
+  "version": "1.2.0",
+  "description": "Zero-dependency DNS email authentication auditor. Validates SPF, DKIM, DMARC, BIMI, MTA-STS, and TLS-RPT configuration with recursive SPF lookup counting and automatic DKIM selector discovery.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
     "dns-auth-check": "dist/cli.js"
   },
@@ -19,7 +26,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
   "keywords": [
     "dns",
@@ -28,6 +35,7 @@
     "dmarc",
     "bimi",
     "mta-sts",
+    "tls-rpt",
     "email",
     "email-authentication",
     "email-security",

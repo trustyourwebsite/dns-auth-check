@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,8 +21,10 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - run: npm audit --audit-level=high
+        continue-on-error: true
 
-  # Verify the library builds and runs on Node 18 (Vitest 3.x needs Node 20+)
+  # Smoke-test the built CLI binary end-to-end on the minimum supported Node (18)
   build-node18:
     runs-on: ubuntu-latest
     steps:
