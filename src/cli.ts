@@ -1,10 +1,26 @@
 #!/usr/bin/env node
 
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { auditDNSAuth } from './auditor.js';
 import { formatTable } from './formatters/table.js';
 import { formatJSON } from './formatters/json.js';
 import type { CLIOptions } from './types.js';
+
+/**
+ * Read the package version from package.json at runtime.
+ * package.json sits at the repo root; the compiled cli.js lives in dist/,
+ * so `../package.json` resolves to the root package.json in both dev and dist.
+ */
+function getVersion(): string {
+  try {
+    const pkg = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    );
+    return pkg.version ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
 
 function printUsage(): void {
   console.log(`
@@ -53,9 +69,7 @@ function parseArgs(args: string[]): { domain: string | null; options: CLIOptions
     }
 
     if (arg === '--version' || arg === '-v') {
-      // Read version from package at build time isn't possible without deps,
-      // so we hardcode it. Updated by prepublishOnly script.
-      console.log('1.0.0');
+      console.log(getVersion());
       process.exit(0);
     }
 
