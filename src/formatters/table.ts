@@ -80,6 +80,15 @@ export function formatTable(result: AuditResult): string {
   }
   lines.push('');
 
+  // TLS-RPT
+  lines.push('TLS-RPT:');
+  if (result.tlsRpt) {
+    lines.push(formatChecks(result.tlsRpt.checks));
+  } else {
+    lines.push('  - Not checked');
+  }
+  lines.push('');
+
   // MX
   if (result.mx) {
     lines.push('MX Records:');

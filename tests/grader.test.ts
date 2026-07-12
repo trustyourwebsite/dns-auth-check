@@ -56,6 +56,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc(),
       bimi: { found: true, record: 'v=BIMI1; l=https://logo.svg', logoUrl: 'https://logo.svg', vmcUrl: null, checks: [] },
       mtaSts: { found: true, record: 'v=STSv1; id=123', policyMode: 'enforce', checks: [] },
+      tlsRpt: null,
       mx: null,
     });
 
@@ -72,6 +73,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc({ found: false }),
       bimi: null,
       mtaSts: null,
+      tlsRpt: null,
       mx: null,
     });
 
@@ -90,6 +92,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc({ policy: 'none', subdomainPolicy: null, rua: 'mailto:d@example.com' }),
       bimi: null,
       mtaSts: null,
+      tlsRpt: null,
       mx: null,
     });
 
@@ -97,6 +100,56 @@ describe('gradeResult', () => {
     expect(result.issues).toContainEqual(
       expect.objectContaining({ message: expect.stringContaining('monitoring only') }),
     );
+  });
+
+  it('does not penalize a 256-bit Ed25519 DKIM key', () => {
+    const result = gradeResult({
+      domain: 'example.com',
+      timestamp: new Date().toISOString(),
+      spf: makeSpf(),
+      dkim: makeDkim({
+        selectors: [
+          { selector: 'default', found: true, record: 'v=DKIM1; k=ed25519; p=abc', keyType: 'ed25519', keyLength: 256, checks: [] },
+        ],
+      }),
+      dmarc: makeDmarc(),
+      bimi: null,
+      mtaSts: null,
+      tlsRpt: null,
+      mx: null,
+    });
+
+    expect(result.issues).not.toContainEqual(
+      expect.objectContaining({ message: expect.stringContaining('too weak') }),
+    );
+    expect(result.score).toBeGreaterThanOrEqual(95);
+  });
+
+  it('adds a small bonus when TLS-RPT is present', () => {
+    const base = gradeResult({
+      domain: 'example.com',
+      timestamp: new Date().toISOString(),
+      spf: makeSpf(),
+      dkim: makeDkim(),
+      dmarc: makeDmarc({ policy: 'quarantine' }),
+      bimi: null,
+      mtaSts: null,
+      tlsRpt: null,
+      mx: null,
+    });
+    const withTlsRpt = gradeResult({
+      domain: 'example.com',
+      timestamp: new Date().toISOString(),
+      spf: makeSpf(),
+      dkim: makeDkim(),
+      dmarc: makeDmarc({ policy: 'quarantine' }),
+      bimi: null,
+      mtaSts: null,
+      tlsRpt: { found: true, record: 'v=TLSRPTv1; rua=mailto:tls@example.com', ruaUris: ['mailto:tls@example.com'], checks: [] },
+      mx: null,
+    });
+
+    expect(withTlsRpt.score).toBeGreaterThanOrEqual(base.score);
   });
 
   it('deducts for SPF +all', () => {
@@ -108,6 +161,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc(),
       bimi: null,
       mtaSts: null,
+      tlsRpt: null,
       mx: null,
     });
 
@@ -126,6 +180,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc(),
       bimi: null,
       mtaSts: null,
+      tlsRpt: null,
       mx: null,
     });
 
@@ -144,6 +199,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc(),
       bimi: null,
       mtaSts: null,
+      tlsRpt: null,
       mx,
     });
 
@@ -161,6 +217,7 @@ describe('gradeResult', () => {
       dmarc: makeDmarc({ found: false }),
       bimi: null,
       mtaSts: null,
+      tlsRpt: null,
       mx: null,
     });
 

@@ -102,6 +102,11 @@ export function gradeResult(result: Omit<AuditResult, 'grade' | 'score' | 'issue
   } else {
     const foundSelectors = result.dkim.selectors.filter((s) => s.found);
     for (const sel of foundSelectors) {
+      // Ed25519 keys are a fixed 256-bit curve point and are strong by design —
+      // the RSA-oriented bit-length thresholds below do not apply to them.
+      if (sel.keyType !== null && sel.keyType.toLowerCase() === 'ed25519') {
+        continue;
+      }
       if (sel.keyLength !== null && sel.keyLength < 1024) {
         score -= 10;
         issues.push({
@@ -196,6 +201,11 @@ export function gradeResult(result: Omit<AuditResult, 'grade' | 'score' | 'issue
         message: 'MTA-STS is in testing mode — consider switching to enforce',
       });
     }
+  }
+
+  // --- TLS-RPT (best practice, small bonus — no penalty when absent) ---
+  if (result.tlsRpt && result.tlsRpt.found) {
+    score = Math.min(100, score + 2);
   }
 
   // --- MX (if checked) ---

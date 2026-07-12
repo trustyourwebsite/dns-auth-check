@@ -23,11 +23,23 @@ const DEFAULT_SELECTORS = [
 ];
 
 /**
- * Try to extract RSA key length from a DKIM public key.
- * The p= value is base64-encoded DER SubjectPublicKeyInfo.
- * RSA key size can be estimated from the decoded length.
+ * Try to estimate the DKIM key length in bits from the public key.
+ *
+ * For Ed25519 keys (`k=ed25519`) the key is always a fixed 256-bit (32-byte)
+ * curve point, so we report 256 directly — the RSA modulus estimation below
+ * does not apply. For RSA keys the p= value is base64-encoded DER
+ * SubjectPublicKeyInfo and the modulus length is estimated from the decoded size.
+ *
+ * @param pValue The base64 `p=` public key value from the DKIM record
+ * @param keyType The `k=` key type (e.g. 'rsa', 'ed25519'), or null if unspecified
+ * @returns Estimated key length in bits, or null if it cannot be determined
  */
-function estimateKeyLength(pValue: string): number | null {
+function estimateKeyLength(pValue: string, keyType: string | null): number | null {
+  // Ed25519 keys are a fixed 256-bit curve point; the RSA modulus math below
+  // would wrongly report them as a tiny "weak" key.
+  if (keyType && keyType.toLowerCase() === 'ed25519') {
+    return 256;
+  }
   try {
     const decoded = Buffer.from(pValue, 'base64');
     const byteLength = decoded.length;
@@ -94,7 +106,7 @@ export async function checkDKIM(
   } else if (hasDnsError) {
     overallChecks.push({
       status: 'error',
-      message: `DNS lookup failed for DKIM selectors � cannot determine if DKIM is configured`,
+      message: `DNS lookup failed for DKIM selectors — cannot determine if DKIM is configured`,
     });
   } else {
     overallChecks.push({
@@ -145,9 +157,13 @@ async function checkSelector(domain: string, selector: string): Promise<DKIMSele
     }
 
     if (publicKey && publicKey.length > 0) {
-      keyLength = estimateKeyLength(publicKey);
+      keyLength = estimateKeyLength(publicKey, keyType);
+      const isEd25519 = keyType !== null && keyType.toLowerCase() === 'ed25519';
       if (keyLength !== null) {
-        if (keyLength < 1024) {
+        if (isEd25519) {
+          // Ed25519 is a modern, strong signature scheme — 256 bits is fully valid.
+          checks.push({ status: 'pass', message: 'Key length: 256 bits (Ed25519)' });
+        } else if (keyLength < 1024) {
           checks.push({
             status: 'fail',
             message: `Key length: ${keyLength} bits — too short, minimum 1024 required`,

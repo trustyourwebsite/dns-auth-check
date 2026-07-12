@@ -1,6 +1,10 @@
 # dns-auth-check
 
-Zero-dependency Node.js tool that validates SPF, DKIM, DMARC, BIMI, and MTA-STS configuration. Recursive SPF lookup counting and automatic DKIM selector discovery. CI-friendly.
+[![npm version](https://img.shields.io/npm/v/@trustyourwebsite/dns-auth-check.svg)](https://www.npmjs.com/package/@trustyourwebsite/dns-auth-check)
+[![license](https://img.shields.io/npm/l/@trustyourwebsite/dns-auth-check.svg)](./LICENSE)
+[![CI](https://github.com/trustyourwebsite/dns-auth-check/actions/workflows/ci.yml/badge.svg)](https://github.com/trustyourwebsite/dns-auth-check/actions/workflows/ci.yml)
+
+Zero-dependency Node.js tool that validates SPF, DKIM, DMARC, BIMI, MTA-STS, and TLS-RPT configuration. Recursive SPF lookup counting and automatic DKIM selector discovery. CI-friendly.
 
 Built by [TrustYourWebsite](https://trustyourwebsite.com) — automated website compliance scanning for EU businesses.
 
@@ -11,10 +15,20 @@ Built by [TrustYourWebsite](https://trustyourwebsite.com) — automated website 
 - **DMARC parsing** with full tag analysis (policy, subdomain policy, reporting URIs, alignment)
 - **BIMI detection** — logo URL and VMC (Verified Mark Certificate) validation
 - **MTA-STS checking** — TXT record and policy file validation
-- **MX record listing** with provider identification (30+ providers)
+- **TLS-RPT detection** — SMTP TLS Reporting record and reporting-URI parsing (RFC 8460)
+- **MX record listing** with provider identification (30+ providers), including RFC 7505 null-MX detection
 - **Grading system** from A+ to F with actionable fix suggestions
 - **Zero runtime dependencies** — uses only `node:dns` and `node:https`
 - **CI-friendly** — exit code 1 when critical issues are found
+
+## How this differs from mxtoolbox / dmarcian
+
+Web dashboards like mxtoolbox and dmarcian are great for one-off manual lookups. This package is a different tool for a different job:
+
+- **Zero dependencies, runs anywhere.** A single `npx` command or a small library import — no account, no API key, no external service round-trip. Your DNS queries go straight from your machine to the resolver.
+- **Scriptable and CI-friendly.** JSON output plus a `--ci` exit code let you gate deploys or run scheduled audits in a pipeline, rather than reading a web page by hand.
+- **Recursive SPF lookup counting.** It follows `include:` and `redirect=` chains to count the real number of DNS lookups against the RFC 7208 limit of 10, instead of only counting the mechanisms in the top-level record.
+- **Automatic DKIM selector discovery.** With no configuration it probes 18 common selectors (Google, Microsoft 365, SendGrid, Resend, Zoho, etc.), so you don't have to already know your selector name to find your keys.
 
 ## Quick Start
 
@@ -96,6 +110,7 @@ import {
   checkDMARC,
   checkBIMI,
   checkMTASTS,
+  checkTLSRPT,
   checkMX,
 } from '@trustyourwebsite/dns-auth-check';
 
@@ -182,9 +197,14 @@ Full website compliance scan → https://trustyourwebsite.com
 - TXT record at `_mta-sts.<domain>`
 - Policy file fetch and mode validation
 
+### TLS-RPT (SMTP TLS Reporting, RFC 8460)
+- TXT record at `_smtp._tls.<domain>`
+- Reporting URI (`rua=`) parsing and scheme validation (`mailto:` / `https:`)
+
 ### MX Records (with `--check-mx`)
 - Record listing with priority
 - Hostname resolution verification
+- Null MX detection (RFC 7505 — domain explicitly does not accept mail)
 - Provider identification (30+ providers including Google Workspace, Microsoft 365, Zoho, Proton, SendGrid, etc.)
 
 ## Grading
@@ -225,6 +245,7 @@ email-auth-check:
 - [TrustYourWebsite](https://trustyourwebsite.com) — Full website compliance scanning for EU businesses
 - [@trustyourwebsite/security-headers](https://github.com/trustyourwebsite/security-headers) — HTTP security headers grader (HSTS, CSP, X-Frame-Options)
 - [@trustyourwebsite/cookie-consent-validator](https://github.com/trustyourwebsite/cookie-consent-validator) — Verify cookie consent banners actually stop tracking on "Reject All"
+
 ## License
 
 MIT © [TrustYourWebsite](https://trustyourwebsite.com)

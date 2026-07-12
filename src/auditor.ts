@@ -3,6 +3,7 @@ import { checkDKIM } from './checks/dkim.js';
 import { checkDMARC } from './checks/dmarc.js';
 import { checkBIMI } from './checks/bimi.js';
 import { checkMTASTS } from './checks/mta-sts.js';
+import { checkTLSRPT } from './checks/tls-rpt.js';
 import { checkMX } from './checks/mx.js';
 import { gradeResult } from './grader.js';
 import { setDnsTimeout } from './dns.js';
@@ -43,12 +44,13 @@ export async function auditDNSAuth(
   }
 
   // Run core checks in parallel
-  const [spf, dkim, dmarc, bimi, mtaSts] = await Promise.all([
+  const [spf, dkim, dmarc, bimi, mtaSts, tlsRpt] = await Promise.all([
     checkSPF(cleanDomain),
     checkDKIM(cleanDomain, options.dkimSelectors),
     checkDMARC(cleanDomain),
     checkBIMI(cleanDomain),
     checkMTASTS(cleanDomain),
+    checkTLSRPT(cleanDomain),
   ]);
 
   // MX is optional
@@ -63,6 +65,7 @@ export async function auditDNSAuth(
     dmarc,
     bimi,
     mtaSts,
+    tlsRpt,
     mx,
   });
 
@@ -76,6 +79,7 @@ export async function auditDNSAuth(
     dmarc,
     bimi,
     mtaSts,
+    tlsRpt,
     mx,
     issues,
   };

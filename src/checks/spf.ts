@@ -135,7 +135,7 @@ export async function checkSPF(domain: string): Promise<SPFResult> {
       }
     } catch (err) {
       if (!isDnsNotFound(err)) {
-        // DNS infrastructure error — don't treat as "not found"
+        // DNS infrastructure error â€” don't treat as "not found"
         const errorMsg = getDnsErrorMessage(err);
         checks.push({ status: 'error', message: `DNS lookup failed for ${d}: ${errorMsg}` });
         return {
@@ -153,7 +153,7 @@ export async function checkSPF(domain: string): Promise<SPFResult> {
           checks,
         };
       }
-      // NOTFOUND/NODATA — no records for this domain, continue checking
+      // NOTFOUND/NODATA â€” no records for this domain, continue checking
     }
   }
 
