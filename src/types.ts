@@ -84,6 +84,15 @@ export interface MTASTSResult {
   checks: CheckResult[];
 }
 
+export interface TLSRPTResult {
+  found: boolean;
+  dnsError?: boolean;
+  record: string | null;
+  /** Parsed reporting URIs from the rua= tag (mailto: / https:). */
+  ruaUris: string[];
+  checks: CheckResult[];
+}
+
 export interface MXRecord {
   priority: number;
   exchange: string;
@@ -112,6 +121,7 @@ export interface AuditResult {
   dmarc: DMARCResult;
   bimi: BIMIResult | null;
   mtaSts: MTASTSResult | null;
+  tlsRpt: TLSRPTResult | null;
   mx: MXResult | null;
   issues: Issue[];
 }
