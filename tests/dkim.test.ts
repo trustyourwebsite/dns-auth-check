@@ -102,4 +102,29 @@ describe('checkDKIM', () => {
     const defaultSel = result.selectors.find((s) => s.selector === 'default');
     expect(defaultSel?.keyType).toBe('ed25519');
   });
+
+  it('reports Ed25519 keys as 256 bits and does not flag them as weak', async () => {
+    mockResolver.resolveTxt.mockImplementation(
+      (domain: string, cb: (err: Error | null, records: string[][]) => void) => {
+        if (domain === 'default._domainkey.example.com') {
+          // 32-byte Ed25519 public key, base64-encoded
+          cb(null, [['v=DKIM1; k=ed25519; p=11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=']]);
+        } else {
+          cb(new Error('ENOTFOUND'), []);
+        }
+      },
+    );
+
+    const result = await checkDKIM('example.com');
+    const defaultSel = result.selectors.find((s) => s.selector === 'default');
+    expect(defaultSel?.keyType).toBe('ed25519');
+    expect(defaultSel?.keyLength).toBe(256);
+    // Must be reported as valid, not "too short"
+    expect(defaultSel?.checks).toContainEqual(
+      expect.objectContaining({ status: 'pass', message: expect.stringContaining('256 bits (Ed25519)') }),
+    );
+    expect(defaultSel?.checks).not.toContainEqual(
+      expect.objectContaining({ status: 'fail', message: expect.stringContaining('too short') }),
+    );
+  });
 });

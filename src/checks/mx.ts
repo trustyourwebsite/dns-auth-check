@@ -1,3 +1,4 @@
+import type { MxRecord } from 'node:dns';
 import { resolveMx, resolveA, isDnsNotFound, getDnsErrorMessage } from '../dns.js';
 import type { MXResult, MXRecord, CheckResult } from '../types.js';
 
@@ -38,6 +39,21 @@ function identifyProvider(exchange: string): string | null {
 }
 
 /**
+ * Detect an RFC 7505 "null MX" configuration: a single MX record whose exchange
+ * is the root domain (".", sometimes surfaced as an empty string by resolvers)
+ * with preference 0, signalling the domain does not accept mail.
+ *
+ * @param records MX records already sorted by priority
+ * @returns `true` if the records represent a null MX
+ */
+function isNullMx(records: MxRecord[]): boolean {
+  if (records.length !== 1) return false;
+  const [only] = records;
+  const exchange = only.exchange.trim();
+  return only.priority === 0 && (exchange === '.' || exchange === '');
+}
+
+/**
  * Check MX records for a domain.
  */
 export async function checkMX(domain: string): Promise<MXResult> {
@@ -55,6 +71,19 @@ export async function checkMX(domain: string): Promise<MXResult> {
     }
 
     const sorted = rawRecords.sort((a, b) => a.priority - b.priority);
+
+    // RFC 7505 "null MX": a single MX with an empty exchange (".") and priority 0
+    // explicitly signals that the domain does not accept mail. Treat it as an
+    // intentional configuration rather than a broken record.
+    if (isNullMx(sorted)) {
+      const nullRecord: MXRecord = { priority: 0, exchange: '.', provider: null };
+      checks.push({
+        status: 'info',
+        message: 'Null MX (RFC 7505) — this domain explicitly does not accept email',
+      });
+      return { found: true, records: [nullRecord], checks };
+    }
+
     const records: MXRecord[] = [];
 
     for (const mx of sorted) {

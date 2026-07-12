@@ -98,14 +98,32 @@ export async function checkDMARC(domain: string): Promise<DMARCResult> {
       checks.push({ status: 'info', message: `Forensic reporting (ruf) configured: ${ruf}` });
     }
 
-    // Percentage (pct=)
+    // Percentage (pct=) — RFC 7489 §6.3: an integer 0-100.
     const pctRaw = getTagValue(tags, 'pct');
-    const pct = pctRaw ? parseInt(pctRaw, 10) : null;
-    if (pct !== null && pct < 100) {
-      checks.push({
-        status: 'warn',
-        message: `Only ${pct}% of emails are subject to DMARC policy — consider increasing to 100%`,
-      });
+    let pct: number | null = null;
+    if (pctRaw !== null) {
+      const parsed = parseInt(pctRaw, 10);
+      if (Number.isNaN(parsed)) {
+        checks.push({
+          status: 'warn',
+          message: `Invalid pct= value "${pctRaw}" — must be an integer 0-100 (RFC 7489); ignoring`,
+        });
+      } else {
+        // Clamp to the RFC-valid range and warn if the raw value was out of bounds.
+        pct = Math.max(0, Math.min(100, parsed));
+        if (parsed !== pct) {
+          checks.push({
+            status: 'warn',
+            message: `pct= value ${parsed} is out of range — clamped to ${pct} (RFC 7489 requires 0-100)`,
+          });
+        }
+        if (pct < 100) {
+          checks.push({
+            status: 'warn',
+            message: `Only ${pct}% of emails are subject to DMARC policy — consider increasing to 100%`,
+          });
+        }
+      }
     }
 
     // Alignment modes
