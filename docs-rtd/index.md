@@ -2,6 +2,8 @@
 
 Built and maintained by [TrustYourWebsite](https://trustyourwebsite.com), a compliance scanner for EU websites.
 
+US business? The same scanner runs at [getuptocode.com](https://getuptocode.com) (Get Up to Code), focused on ADA accessibility and privacy lawsuit risk.
+
 Zero-dependency Node.js tool that validates SPF, DKIM, DMARC, BIMI and MTA-STS configuration, with recursive SPF lookup counting and automatic DKIM selector discovery. CI-friendly.
 
 ## Features
