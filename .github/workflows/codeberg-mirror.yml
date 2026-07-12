@@ -1,0 +1,19 @@
+name: Mirror to Codeberg
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to Codeberg
+        run: |
+          git remote add codeberg \
+            "https://${{ secrets.CODEBERG_USER }}:${{ secrets.CODEBERG_TOKEN }}@codeberg.org/trustyourwebsite/${{ github.event.repository.name }}.git"
+          git push codeberg main --force
+          git push codeberg --tags --force
