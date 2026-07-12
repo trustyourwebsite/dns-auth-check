@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-07-12
+## [1.2.0] — 2026-07-12
 
 ### Added
 - **TLS-RPT check** (SMTP TLS Reporting, RFC 8460): looks up the TXT record at `_smtp._tls.<domain>`, parses the `rua=` reporting URIs, and validates their scheme (`mailto:` / `https:`). Exported as `checkTLSRPT()` and included in the audit result (`tlsRpt`), grading (small positive contribution when present, no penalty when absent), and both output formatters.
@@ -16,6 +16,15 @@ All notable changes to this project will be documented in this file. The format 
 - CI matrix now tests Node 18, 20 and 22, plus a non-blocking `npm audit --audit-level=high` step.
 - npm publish now uses `--provenance` (with `id-token: write`) for supply-chain attestation.
 - `prepublishOnly` now runs lint, tests and build.
+
+
+## [1.1.1] — 2026-05-20
+
+### Changed
+- Migrated the `homepage` field and all TrustYourWebsite references to the canonical trustyourwebsite.com domain.
+
+### Docs
+- Added a GitHub Pages landing page.
 
 ## [1.1.0] — 2026-04-19
 

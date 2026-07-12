@@ -1,0 +1,13 @@
+# GitLab Pages deploy only. Inert on GitHub, active on the GitLab mirror.
+# Builds a deterministic changelog + quickstart page from CHANGELOG.md,
+# package.json and README.md. No tests, no lint, no publish here — GitHub
+# remains the development home (see .github/workflows/).
+pages:
+  image: node:22-alpine
+  script:
+    - node scripts/build-changelog-page.mjs
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
