@@ -1,0 +1,24 @@
+name: Mirror to GitLab
+
+# Keeps the read-only GitLab mirror in sync with GitHub on every push to main.
+# The mirror push lands .gitlab-ci.yml on GitLab, which triggers the Pages
+# build — no GitLab webhooks needed. Requires repo/org secrets GITLAB_USER
+# and GITLAB_MIRROR_TOKEN (PAT with write_repository scope).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to GitLab
+        run: |
+          git remote add gitlab \
+            "https://${{ secrets.GITLAB_USER }}:${{ secrets.GITLAB_MIRROR_TOKEN }}@gitlab.com/trustyourwebsite/${{ github.event.repository.name }}.git"
+          git push gitlab main --force
+          git push gitlab --tags --force
