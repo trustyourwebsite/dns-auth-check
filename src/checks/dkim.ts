@@ -106,7 +106,7 @@ export async function checkDKIM(
   } else if (hasDnsError) {
     overallChecks.push({
       status: 'error',
-      message: `DNS lookup failed for DKIM selectors � cannot determine if DKIM is configured`,
+      message: `DNS lookup failed for DKIM selectors — cannot determine if DKIM is configured`,
     });
   } else {
     overallChecks.push({
