@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-12
+
+### Added
+- **TLS-RPT check** (SMTP TLS Reporting, RFC 8460): looks up the TXT record at `_smtp._tls.<domain>`, parses the `rua=` reporting URIs, and validates their scheme (`mailto:` / `https:`). Exported as `checkTLSRPT()` and included in the audit result (`tlsRpt`), grading (small positive contribution when present, no penalty when absent), and both output formatters.
+- **Null MX detection** (RFC 7505): a single MX record with exchange `.` (or an empty exchange) and priority 0 is now recognised as an intentional "this domain does not accept mail" configuration rather than a broken record.
+- npm package `exports` map (conditional `types`/`import`) alongside the existing `main`/`types` fields.
+
+### Changed
+- `--version` now reads the real version from `package.json` at runtime instead of a hardcoded string (previously stuck at `1.0.0`).
+- **DKIM Ed25519 support:** Ed25519 keys (`k=ed25519`) are now reported as a fixed 256-bit key and are no longer misreported as a "too short / weak" key by the RSA-oriented length estimator or penalised in grading.
+- **DMARC `pct=` handling** (RFC 7489): the percentage is clamped to the valid 0–100 range and a warning is emitted when the raw value is out of range or non-numeric.
+- CI matrix now tests Node 18, 20 and 22, plus a non-blocking `npm audit --audit-level=high` step.
+- npm publish now uses `--provenance` (with `id-token: write`) for supply-chain attestation.
+- `prepublishOnly` now runs lint, tests and build.
+
 ## [1.1.0] — 2026-04-19
 
 ### Added
